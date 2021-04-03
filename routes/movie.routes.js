@@ -31,4 +31,32 @@ router.post('/movies/create', fileUploader.single('image'), (req, res) => {
     .catch(error => console.log(`Error while creating a new movie: ${error}`));
 });
 
+// GET route for querying a specific movie from the database
+// and pre-filling the edit form
+router.get('/movies/:id/edit', (req, res) => {
+  const { id } = req.params;
+  Movie.findById(id)
+    .then(movieToEdit => res.render('movie-edit', movieToEdit))
+    .catch(error => console.log(`Error while getting a single movie for edit: ${error}`));
+});
+
+// POST route to save changes after updates in a specific movie
+router.post('/movies/:id/edit', fileUploader.single('image'), (req, res) => {
+  const { id } = req.params;
+  const { title, description } = req.body;
+
+  let imageUrl;
+  if (req.file) {
+    imageUrl = req.file.path;
+  } else {
+    imageUrl = req.body.existingImage;
+  }
+
+  Movie.findByIdAndUpdate(id, { title, description, imageUrl }, { new: true })
+    .then(() => res.redirect(`/movies`))
+    .catch(error => console.log(`Error while updating a single movie: ${error}`));
+});
+
+module.exports = router;
+
 module.exports = router;
